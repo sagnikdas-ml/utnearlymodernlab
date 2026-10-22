@@ -1,0 +1,17 @@
+{
+  "name": "utn-early-modern-lab",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "npm run build && wrangler pages dev dist",
+    "check": "npm run build && node --check worker.js && node --check public/dynamic.js && node --check public/search.js && node --test tests/*.test.js",
+    "deploy": "npm run build && wrangler pages deploy dist",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "linkedom": "^0.18.14",
+    "wrangler": "^4.45.0"
+  }
+}
