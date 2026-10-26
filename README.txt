@@ -45,7 +45,7 @@ Manuscript copied from the existing project; Cambridge University Library attrib
 
 Publishing requires Cloudflare project/account access and DNS configuration. No production deployment is created by building this folder.
 
-Pages: / (people), /research/, /publications/, /events/, /about/, /contact/, /search/.
+Pages: / (people), /research/, /publications/, /events/ (future events link to seminars.danajalobeanu.com), /events/archive/ (with individual major-event pages), /about/, /contact/, /search/.
 Search: Ctrl+K or Cmd+K; automatic HTML index plus optional lab notices.
 Browser checks: npm run test:browser (uses installed Microsoft Edge).
 

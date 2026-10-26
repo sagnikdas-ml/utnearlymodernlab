@@ -8,6 +8,10 @@ const pages = [
   { slug: 'research', title: 'Research', description: 'Projects on Baconianism, natural magic, and experimental knowledge.', sections: ['research'] },
   { slug: 'publications', title: 'Publications', description: 'Selected books and articles by researchers in the Early Modern Lab.', sections: ['publications'] },
   { slug: 'events', title: 'Seminars & events', description: 'Links to the seminar programme, international meetings, and summer school archives.', sections: ['events'] },
+  { slug: 'events/archive', title: 'Recorded events', description: 'Historical record of the Bucharest–Princeton summer seminar and selected major Early Modern Lab events.', sections: ['events-archive'] },
+  { slug: 'events/princeton-bucharest-nuremberg-2026', title: 'Princeton Bucharest Nuremberg Seminar', description: 'The 2026 seminar on error, falsehood, and forgery in early modern philosophy and the sciences.', sections: ['event-princeton'] },
+  { slug: 'events/rome-nuremberg-oxford-2026', title: 'Rome–Nuremberg–Oxford Summer School 2026', description: 'The 2026 postgraduate summer school on writing practices in the humanities.', sections: ['event-rome'] },
+  { slug: 'events/francis-bacon-2026', title: 'Francis Bacon Conference 2026', description: 'The 2026 conference marking four centuries of Francis Bacon scholarship at UTN.', sections: ['event-bacon'] },
   { slug: 'about', title: 'About the lab', description: 'Our approach to early modern philosophy and the sciences at UTN.', sections: ['about'] },
   { slug: 'contact', title: 'Contact', description: 'Get in touch about research, seminars, and doctoral supervision.', sections: ['contact'] },
   { slug: 'search', title: 'Search the lab', description: 'Find team members, projects, publications, and events.', sections: ['search'] },
@@ -32,7 +36,10 @@ for (const page of pages) {
   for (const n of document.querySelectorAll('[href="/styles.css"], [src="/search.js"], [src="/dynamic.js"]')) {
     const attr = n.hasAttribute('href') ? 'href' : 'src'; n.setAttribute(attr, `${n.getAttribute(attr)}?v=${version}`);
   }
-  for (const link of document.querySelectorAll('nav a')) if (link.getAttribute('href') === path) link.setAttribute('aria-current', 'page');
+  for (const link of document.querySelectorAll('nav a')) {
+    const href = link.getAttribute('href');
+    if (href === path || (href === '/events/' && path.startsWith('/events/'))) link.setAttribute('aria-current', 'page');
+  }
   const main = document.querySelector('main');
   if (page.slug) {
     const crumb = document.createElement('nav'); crumb.className = 'breadcrumbs wrap'; crumb.setAttribute('aria-label', 'Breadcrumb');

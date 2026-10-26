@@ -21,7 +21,7 @@ test('Keyboard search, result navigation, focus restoration, and Mac shortcut', 
 });
 test('All pages work on mobile without horizontal overflow', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  for (const path of ['/', '/research/', '/publications/', '/events/', '/about/', '/contact/', '/search/']) {
+  for (const path of ['/', '/research/', '/publications/', '/events/', '/events/archive/', '/events/princeton-bucharest-nuremberg-2026/', '/events/rome-nuremberg-oxford-2026/', '/events/francis-bacon-2026/', '/about/', '/contact/', '/search/']) {
     const response = await page.goto(path); expect(response.status()).toBe(200);
     await expect(page.locator('main h1')).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
@@ -32,7 +32,7 @@ test('Static pages and search directory remain usable without JavaScript', async
   const context = await browser.newContext({ javaScriptEnabled: false }); const page = await context.newPage();
   await page.goto('http://127.0.0.1:8790/'); await expect(page.getByRole('heading', { name: 'Dana Jalobeanu', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Search the website', exact: true }).click();
-  await expect(page.locator('#browse-pages a')).toHaveCount(6); await context.close();
+  await expect(page.locator('#browse-pages a')).toHaveCount(10); await context.close();
 });
 test('Search failure offers retry and old bookmarks resolve', async ({ page }) => {
   await page.route('**/search-index.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
