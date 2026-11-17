@@ -30,6 +30,25 @@ test('Homepage introduces people and keeps detailed research on its own page', (
   assert.equal(docs.get('/').querySelector('#research'), null);
   assert.ok(docs.get('/research/').querySelector('#research'));
 });
+test('Pages expose canonical SEO metadata and valid structured data', async () => {
+  for (const [path, document] of docs) {
+    assert.equal(document.querySelector('link[rel="canonical"]').href, `https://emlab.danajalobeanu.com${path}`);
+    assert.ok(document.querySelector('meta[name="description"]').content.length >= 50, path);
+    assert.equal(document.querySelector('meta[property="og:url"]').content, `https://emlab.danajalobeanu.com${path}`);
+    assert.equal(document.querySelector('meta[property="og:title"]').content, document.title);
+    assert.ok(document.querySelector('meta[property="og:image"]').content.startsWith('https://'));
+    for (const script of document.querySelectorAll('script[type="application/ld+json"]')) assert.doesNotThrow(() => JSON.parse(script.textContent));
+  }
+  assert.equal(docs.get('/search/').querySelector('meta[name="robots"]').content, 'noindex, follow');
+  const homeData = JSON.parse(docs.get('/').querySelector('script[type="application/ld+json"]').textContent);
+  assert.ok(homeData.some(item => item['@type'] === 'WebSite'));
+  assert.ok(homeData.some(item => item['@type'] === 'ResearchOrganization'));
+  const robots = await readFile(new URL('../dist/robots.txt', import.meta.url), 'utf8');
+  assert.match(robots, /Disallow: \/api\//); assert.match(robots, /Sitemap: https:\/\/emlab\.danajalobeanu\.com\/sitemap\.xml/);
+  const sitemap = await readFile(new URL('../dist/sitemap.xml', import.meta.url), 'utf8');
+  for (const path of routes.filter(path => path !== '/search/')) assert.ok(sitemap.includes(`<loc>https://emlab.danajalobeanu.com${path}</loc>`), path);
+  assert.doesNotMatch(sitemap, /\/search\//);
+});
 test('Major event archive and event detail pages include sourced facts and no phone numbers', () => {
   const archive = docs.get('/events/archive/').body.textContent;
   assert.match(archive, /Princeton–Bucharest–Nuremberg Seminar/);

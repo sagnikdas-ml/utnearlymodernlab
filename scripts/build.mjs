@@ -24,15 +24,35 @@ const version = revision.digest('hex').slice(0, 12);
 const index = [], documents = [];
 const text = node => node.textContent.replace(/\s+/g, ' ').trim();
 const slugify = value => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+const addJsonLd = (document, data) => {
+  const script = document.createElement('script'); script.type = 'application/ld+json';
+  script.textContent = JSON.stringify(data); document.head.append(script);
+};
 await mkdir(new URL('dist/', root), { recursive: true });
 await cp(new URL('public/', root), new URL('dist/', root), { recursive: true });
 for (const page of pages) {
   const path = page.slug ? `/${page.slug}/` : '/';
   const sections = await Promise.all(page.sections.map(name => readFile(new URL(`content/${name}.html`, root), 'utf8')));
   const { document } = parseHTML(layout.replace('<!-- PAGE CONTENT -->', sections.join('\n')));
-  document.title = `${page.title} · Early Modern Lab · UTN`;
+  const pageTitle = `${page.title} · Early Modern Lab · UTN`;
+  const pageUrl = origin + path;
+  document.title = pageTitle;
   document.querySelector('meta[name="description"]').setAttribute('content', page.description);
-  document.querySelector('link[rel="canonical"]').href = origin + path;
+  document.querySelector('link[rel="canonical"]').href = pageUrl;
+  for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) document.querySelector(selector).content = pageTitle;
+  for (const selector of ['meta[property="og:description"]', 'meta[name="twitter:description"]']) document.querySelector(selector).content = page.description;
+  document.querySelector('meta[property="og:url"]').content = pageUrl;
+  if (page.slug === 'search') document.querySelector('meta[name="robots"]').content = 'noindex, follow';
+  if (!page.slug) addJsonLd(document, [
+    { '@context': 'https://schema.org', '@type': 'WebSite', name: 'Early Modern Lab', alternateName: 'EMLab', url: origin },
+    { '@context': 'https://schema.org', '@type': 'ResearchOrganization', name: 'Early Modern Lab', alternateName: 'EMLab', url: origin, description: page.description,
+      email: 'earlymodern@utn.de', parentOrganization: { '@type': 'CollegeOrUniversity', name: 'University of Technology Nuremberg', alternateName: 'UTN', url: 'https://www.utn.de/' },
+      sameAs: ['https://www.utn.de/en/departments/department-liberal-arts-and-social-sciences/early-modern/'] }
+  ]);
+  else addJsonLd(document, { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+    { '@type': 'ListItem', position: 2, name: page.title, item: pageUrl }
+  ] });
   document.body.setAttribute('data-page', page.slug || 'home');
   for (const n of document.querySelectorAll('[href="/styles.css"], [src="/search.js"], [src="/dynamic.js"]')) {
     const attr = n.hasAttribute('href') ? 'href' : 'src'; n.setAttribute(attr, `${n.getAttribute(attr)}?v=${version}`);
@@ -73,7 +93,8 @@ for (const { page, document } of documents) {
   await mkdir(directory, { recursive: true }); await writeFile(new URL('index.html', directory), document.toString());
 }
 await writeFile(new URL('dist/search-index.json', root), JSON.stringify(index));
-await writeFile(new URL('dist/sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.filter(p => p.slug !== 'search').map(p => `<url><loc>${origin}/${p.slug ? `${p.slug}/` : ''}</loc></url>`).join('')}</urlset>`);
+const sitemap = pages.filter(p => p.slug !== 'search').map(p => `  <url><loc>${origin}/${p.slug ? `${p.slug}/` : ''}</loc></url>`).join('\n');
+await writeFile(new URL('dist/sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${sitemap}\n</urlset>\n`);
 await cp(new URL('worker.js', root), new URL('dist/_worker.js', root));
 // Remove retired public maintenance assets from older builds.
 for (const file of ['editing.html', 'recordings-template.csv']) await rm(new URL(`dist/${file}`, root), { force: true });
