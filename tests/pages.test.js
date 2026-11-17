@@ -19,7 +19,6 @@ test('All pages have one main heading, active navigation, unique IDs and working
       const href = a.getAttribute('href');
       if (!href.startsWith('/') && !href.startsWith('#')) continue;
       const u = new URL(href, `https://lab.example${path}`);
-      if (u.pathname === '/editing.html') continue;
       if (u.pathname.startsWith('/assets/')) { await access(new URL(`../dist${u.pathname}`, import.meta.url)); continue; }
       assert.ok(docs.has(u.pathname), href);
       if (u.hash) assert.ok(docs.get(u.pathname).getElementById(u.hash.slice(1)), `${path}: ${href}`);

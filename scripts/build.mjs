@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
+import { cp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
 const root = new URL('../', import.meta.url);
@@ -74,6 +74,7 @@ for (const { page, document } of documents) {
 await writeFile(new URL('dist/search-index.json', root), JSON.stringify(index));
 await writeFile(new URL('dist/sitemap.xml', root), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${pages.filter(p => p.slug !== 'search').map(p => `<url><loc>${origin}/${p.slug ? `${p.slug}/` : ''}</loc></url>`).join('')}</urlset>`);
 await cp(new URL('worker.js', root), new URL('dist/_worker.js', root));
-await cp(new URL('EDITING.html', root), new URL('dist/editing.html', root));
+// Remove retired public maintenance assets from older builds.
+for (const file of ['editing.html', 'recordings-template.csv']) await rm(new URL(`dist/${file}`, root), { force: true });
 await writeFile(new URL('dist/_routes.json', root), JSON.stringify({ version: 1, include: ['/api/*'], exclude: [] }));
 console.log(`Built ${pages.length} pages and ${index.length} searchable entries.`);

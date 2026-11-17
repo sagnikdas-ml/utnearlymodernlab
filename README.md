@@ -78,7 +78,7 @@ The current recordings sheet is connected in `wrangler.toml`: [edit recordings](
 
 The seminar page now plays YouTube recordings inline. Until a sheet is configured, it shows Rosa Matera's recording. Once configured, the sheet controls the entire list, so include that first recording in your sheet.
 
-1. Import `public/recordings-template.csv` into a new Google Sheet, or create a tab with these exact column headings: `title,speaker,details,date,youtube_url,published`.
+1. Import `recordings-template.csv` into a new Google Sheet, or create a tab with these exact column headings: `title,speaker,details,date,youtube_url,published`.
 2. Add one seminar per row. `title` and `youtube_url` are required. Use a YouTube share link such as `https://youtu.be/WdTGZ4d96uc` or a `https://www.youtube.com/watch?v=...` link. Speaker and details are optional; date is optional and must be `YYYY-MM-DD` if present. Set `published` to `yes` to show a row or `no` to hide it. Blank also means published. Rows appear in sheet order.
 3. In Google Sheets, choose **File → Share → Publish to web**, select only the recordings tab, and choose **Comma-separated values (.csv)**. Copy the published CSV URL (not the spreadsheet editing URL).
 4. Set `RECORDINGS_FEED_URL` in your Cloudflare Pages environment to that CSV URL, then redeploy once. For local preview, put `RECORDINGS_FEED_URL="your-published-csv-url"` in an ignored `.dev.vars` file.
