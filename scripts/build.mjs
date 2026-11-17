@@ -14,6 +14,7 @@ const pages = [
   { slug: 'events/francis-bacon-2026', title: 'Francis Bacon Conference 2026', description: 'The 2026 conference marking four centuries of Francis Bacon scholarship at UTN.', sections: ['event-bacon'] },
   { slug: 'about', title: 'About the lab', description: 'Our approach to early modern philosophy and the sciences at UTN.', sections: ['about'] },
   { slug: 'contact', title: 'Contact', description: 'Get in touch about research, seminars, and doctoral supervision.', sections: ['contact'] },
+  { slug: 'imprint', title: 'EMLab imprint', description: 'Website owner and site maker of the Early Modern Lab website.', sections: ['imprint'] },
   { slug: 'search', title: 'Search the lab', description: 'Find team members, projects, publications, and events.', sections: ['search'] },
 ];
 const layout = await readFile(new URL('templates/layout.html', root), 'utf8');

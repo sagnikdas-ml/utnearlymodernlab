@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { readFile, access } from 'node:fs/promises';
 import { parseHTML } from 'linkedom';
 import { searchEntries } from '../public/search-core.js';
-const routes = ['/', '/research/', '/publications/', '/events/', '/events/archive/', '/events/princeton-bucharest-nuremberg-2026/', '/events/rome-nuremberg-oxford-2026/', '/events/francis-bacon-2026/', '/about/', '/contact/', '/search/'];
+const routes = ['/', '/research/', '/publications/', '/events/', '/events/archive/', '/events/princeton-bucharest-nuremberg-2026/', '/events/rome-nuremberg-oxford-2026/', '/events/francis-bacon-2026/', '/about/', '/contact/', '/imprint/', '/search/'];
 const docs = new Map(await Promise.all(routes.map(async path => [path, parseHTML(await readFile(new URL(`../dist${path}index.html`, import.meta.url), 'utf8')).document])));
 test('All pages have one main heading, active navigation, unique IDs and working internal links', async () => {
   for (const [path, document] of docs) {
     assert.equal(document.querySelectorAll('main h1').length, 1, path);
     const ids = [...document.querySelectorAll('[id]')].map(n => n.id);
     assert.equal(ids.length, new Set(ids).size, path);
-    if (path !== '/search/') {
+    if (path !== '/search/' && path !== '/imprint/') {
       const current = document.querySelector('nav[aria-label="Main navigation"] [aria-current="page"]');
       assert.ok(current, `${path}: active navigation item missing`);
       assert.equal(current.getAttribute('href'), path.startsWith('/events/') ? '/events/' : path);
