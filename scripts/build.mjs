@@ -2,9 +2,9 @@ import { cp, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { parseHTML } from 'linkedom';
 const root = new URL('../', import.meta.url);
-const origin = 'https://utn-emlab.danajalobeanu.com';
+const origin = 'https://emlab.danajalobeanu.com';
 const pages = [
-  { slug: '', title: 'Team & lab', description: 'Meet Dana Jalobeanu and the researchers of the Early Modern Lab at UTN.', sections: ['home', 'people', 'explore'] },
+  { slug: '', title: 'Team & lab', description: 'Meet Dana Jalobeanu and the researchers of the Early Modern Lab at UTN.', sections: ['home', 'people', 'workshops', 'explore'] },
   { slug: 'research', title: 'Research', description: 'Projects on Baconianism, natural magic, and experimental knowledge.', sections: ['research'] },
   { slug: 'publications', title: 'Publications', description: 'Selected books and articles by researchers in the Early Modern Lab.', sections: ['publications'] },
   { slug: 'events', title: 'Seminars & events', description: 'Links to the seminar programme, international meetings, and summer school archives.', sections: ['events'] },

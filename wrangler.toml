@@ -1,7 +1,8 @@
-name = "utn-early-modern-lab"
+name = "utnearlymodernlab"
 pages_build_output_dir = "./dist"
 compatibility_date = "2026-10-21"
 
 [vars]
+RECORDINGS_FEED_URL = "https://docs.google.com/spreadsheets/d/1ZEMyhhd88YmqSnf0qgfd-W625RNjahUEWuOVkVadX4w/export?format=csv"
 # Optional: a public CSV export for an Announcements tab. See EDITING.html.
 # ANNOUNCEMENTS_FEED_URL = "https://docs.google.com/spreadsheets/d/ID/export?format=csv&gid=TAB_ID"

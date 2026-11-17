@@ -30,3 +30,42 @@ async function announcements() {
   } catch { /* Optional notices must never prevent the rest of the page loading. */ }
 }
 announcements();
+
+function preparePlayers(root) {
+  for (const frame of root.querySelectorAll('.video-frame')) {
+    if (frame.firstChild || !/^[\w-]{11}$/.test(frame.dataset.videoId)) continue;
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube-nocookie.com/embed/${frame.dataset.videoId}`;
+    iframe.title = frame.dataset.videoTitle;
+    iframe.loading = 'lazy';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    iframe.referrerPolicy = 'strict-origin-when-cross-origin';
+    frame.append(iframe);
+  }
+}
+async function recordings() {
+  const list = document.querySelector('#recording-list'); if (!list) return;
+  const status = document.querySelector('#recording-status');
+  preparePlayers(list);
+  try {
+    const data = await getFeed('recordings');
+    if (!data.configured) return;
+    const cards = data.items.map(item => {
+      const article = el('article', '', 'recording-card');
+      article.append(el('h4', item.title));
+      if (item.speaker || item.date) article.append(el('p', [item.speaker, item.date].filter(Boolean).join(' · '), 'recording-meta'));
+      if (item.details) article.append(el('p', item.details, 'recording-details'));
+      const frame = el('div', '', 'video-frame');
+      frame.dataset.videoId = item.videoId; frame.dataset.videoTitle = item.title;
+      article.append(frame);
+      return article;
+    });
+    list.replaceChildren(...cards);
+    preparePlayers(list);
+    status.textContent = !cards.length ? 'No recordings are published yet.' : data.stale ? 'Showing the last available recordings while updates are checked.' : '';
+  } catch {
+    status.textContent = 'The recording list could not be updated. The featured recording is still available.';
+  }
+}
+recordings();

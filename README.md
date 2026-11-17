@@ -51,7 +51,7 @@ There are two ways to deploy. For a maintained site, connect the Git repository 
 2. In the [Cloudflare dashboard](https://dash.cloudflare.com/), open **Workers & Pages** and create a Pages project connected to that repository.
 3. Choose the production branch (commonly `main`). Set the build command to `npm run build` and the build output directory to `dist`. The project does not need a framework preset.
 4. Save and deploy. Cloudflare will install the dependencies from `package-lock.json`, build the site, and publish it. Each subsequent push to the production branch triggers a production deployment; other branches can be used for preview deployments.
-5. In the Pages project's **Custom domains** settings, add `utn-emlab.danajalobeanu.com` and follow the DNS instructions Cloudflare shows. The domain must be configured in Cloudflare DNS (or pointed to the nameservers Cloudflare specifies) for the custom domain to become active.
+5. In the Pages project's **Custom domains** settings, add `emlab.danajalobeanu.com` and follow the DNS instructions Cloudflare shows. The domain must be configured in Cloudflare DNS (or pointed to the nameservers Cloudflare specifies) for the custom domain to become active.
 
 The build copies `worker.js` to `dist/_worker.js` and writes a Pages routing file for `/api/*`. Cloudflare Pages therefore runs the Worker for API paths and serves the remaining pages and assets as static files. Keep these generated files in the build output; do not upload only the source `public/` directory.
 
@@ -63,22 +63,38 @@ Install dependencies and authenticate Wrangler with the Cloudflare account that 
 npm install
 npx wrangler login
 npm run build
-npx wrangler pages deploy dist --project-name utn-early-modern-lab
+npx wrangler pages deploy dist --project-name utnearlymodernlab
 ```
 
-Create a Pages project named `utn-early-modern-lab` in the Cloudflare dashboard first if it does not exist. The repository's `npm run deploy` script builds and deploys `dist/` using Wrangler; it uses the project name in `wrangler.toml`. You need access to the Cloudflare account and project to publish.
+Create a Pages project named `utnearlymodernlab` in the Cloudflare dashboard first if it does not exist. The repository's `npm run deploy` script builds and deploys `dist/` using Wrangler; it uses the project name in `wrangler.toml`. You need access to the Cloudflare account and project to publish.
 
 ### Optional announcements feed
 
 The announcements panel is optional. To enable it, configure `ANNOUNCEMENTS_FEED_URL` as a Pages environment variable for the production environment (and preview, if desired). Set it to the public CSV export URL of a Google Sheets tab with the columns `title,summary,link,date,expires,published`. See [`EDITING.html`](EDITING.html) for the expected row values and privacy considerations. Do not put private data in the sheet: the source CSV is public.
 
-## Project map
+## Seminar recordings: Google Sheet setup (no Apps Script)
+
+The current recordings sheet is connected in `wrangler.toml`: [edit recordings](https://docs.google.com/spreadsheets/d/1ZEMyhhd88YmqSnf0qgfd-W625RNjahUEWuOVkVadX4w/edit). Its public CSV export has been verified. Add rows to its first tab using the existing headings; keep the sheet publicly viewable. No additional configuration is needed for this sheet. The instructions below apply when replacing it.
+
+The seminar page now plays YouTube recordings inline. Until a sheet is configured, it shows Rosa Matera's recording. Once configured, the sheet controls the entire list, so include that first recording in your sheet.
+
+1. Import `public/recordings-template.csv` into a new Google Sheet, or create a tab with these exact column headings: `title,speaker,details,date,youtube_url,published`.
+2. Add one seminar per row. `title` and `youtube_url` are required. Use a YouTube share link such as `https://youtu.be/WdTGZ4d96uc` or a `https://www.youtube.com/watch?v=...` link. Speaker and details are optional; date is optional and must be `YYYY-MM-DD` if present. Set `published` to `yes` to show a row or `no` to hide it. Blank also means published. Rows appear in sheet order.
+3. In Google Sheets, choose **File → Share → Publish to web**, select only the recordings tab, and choose **Comma-separated values (.csv)**. Copy the published CSV URL (not the spreadsheet editing URL).
+4. Set `RECORDINGS_FEED_URL` in your Cloudflare Pages environment to that CSV URL, then redeploy once. For local preview, put `RECORDINGS_FEED_URL="your-published-csv-url"` in an ignored `.dev.vars` file.
+5. Thereafter, add or edit rows in the sheet; no website rebuild or `code.gs` is needed for content updates. Google publication and the site's five-minute cache may delay updates briefly. A temporary feed outage keeps the cached list when available, otherwise the first featured recording remains visible.
+
+The sheet and listed unlisted-video links are public. Keep private notes out of the published tab; `published=no` hides a row on the website but does not make that sheet row private. Videos must allow embedding in YouTube. The player connects to YouTube only when a visitor opens “Watch recording”.
+
+## Homepage workshops
+
+`content/workshops.html` is the permanent workshops section immediately below Meet the team. New Atlantis is its first static entry, using the supplied poster and PDF programme in `public/assets/`. To feature another workshop, add an article inside `workshop-list`; keep or remove older articles as needed. Workshops are independent of the recordings sheet.
 
 - `content/` — editable page sections in HTML.
 - `templates/layout.html` — shared document shell and navigation.
 - `public/` — styles, scripts, images, and other static files copied to the build.
 - `scripts/build.mjs` — assembles pages, generates the search index, and prepares the Pages Worker output.
-- `worker.js` — read-only API proxy for optional announcement data; static pages are not served through this Worker.
+- `worker.js` — read-only API proxy for Google Sheet recordings and optional announcement data; static pages are not served through this Worker.
 - `dist/` — generated deployment output; ignored by Git and rebuilt for each deploy.
 
 ## Useful commands

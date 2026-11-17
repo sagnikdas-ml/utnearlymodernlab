@@ -1,9 +1,20 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseCsv, publicRecords, handleFeed, validDate } from '../worker.js';
+import { parseCsv, publicRecords, handleFeed, validDate, youtubeId } from '../worker.js';
 const source = 'https://example.org/feed.csv';
 const request = () => new Request('https://lab.example/api/announcements');
 const csv = 'date,title,speaker,published\n2026-11-04,A talk,A researcher,yes';
+test('Recording links accept YouTube formats and reject impostors and invalid IDs', () => {
+  for (const url of ['https://youtu.be/WdTGZ4d96uc?si=abc', 'https://www.youtube.com/watch?v=WdTGZ4d96uc', 'https://youtube.com/embed/WdTGZ4d96uc']) assert.equal(youtubeId(url), 'WdTGZ4d96uc');
+  for (const url of ['https://youtube.com.evil.test/watch?v=WdTGZ4d96uc', 'javascript:alert(1)', 'https://youtu.be/invalid']) assert.equal(youtubeId(url), '');
+});
+test('Recordings require title and video, allow undated rows, and hide drafts', async () => {
+  const row = { title: 'A talk', youtube_url: 'https://youtu.be/WdTGZ4d96uc', details: 'Some details', private_note: 'secret' };
+  const records = publicRecords([row, { ...row, published: 'no' }, { ...row, date: '2026-02-30' }, { ...row, youtube_url: 'https://example.org' }], 'recordings');
+  assert.deepEqual(records, [{ title: 'A talk', speaker: '', details: 'Some details', date: '', videoId: 'WdTGZ4d96uc' }]);
+  const response = await handleFeed(new Request('https://lab.example/api/recordings'), { RECORDINGS_FEED_URL: source }, {}, memoryCache(), async () => new Response('title,youtube_url\nA talk,https://youtu.be/WdTGZ4d96uc'));
+  assert.equal((await response.json()).items[0].videoId, 'WdTGZ4d96uc');
+});
 function memoryCache() {
   const entries = new Map();
   return { match: async key => entries.get(key.url)?.clone(), put: async (key, value) => entries.set(key.url, value.clone()) };

@@ -30,7 +30,7 @@ test('All pages work on mobile without horizontal overflow', async ({ page }) =>
 });
 test('Static pages and search directory remain usable without JavaScript', async ({ browser }) => {
   const context = await browser.newContext({ javaScriptEnabled: false }); const page = await context.newPage();
-  await page.goto('http://127.0.0.1:8790/'); await expect(page.getByRole('heading', { name: 'Dana Jalobeanu', exact: true })).toBeVisible();
+  await page.goto('http://127.0.0.1:8790/'); await expect(page.getByRole('heading', { name: 'Dana Jalobeanu Lab Lead', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Search the website', exact: true }).click();
   await expect(page.locator('#browse-pages a')).toHaveCount(10); await context.close();
 });

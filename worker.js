@@ -29,7 +29,20 @@ export function safeUrl(value) {
 export function validDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(value || '') && Number.isFinite(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
 }
+export function youtubeId(value) {
+  try {
+    const u = new URL(value);
+    if (u.protocol !== 'https:') return '';
+    const id = u.hostname === 'youtu.be' ? u.pathname.slice(1) :
+      ['youtube.com', 'www.youtube.com', 'm.youtube.com'].includes(u.hostname) ?
+        (u.pathname === '/watch' ? u.searchParams.get('v') : /^\/(?:embed|shorts|live)\/([^/]+)$/.exec(u.pathname)?.[1]) : '';
+    return /^[\w-]{11}$/.test(id || '') ? id : '';
+  } catch { return ''; }
+}
 export function publicRecords(rows, kind) {
+  if (kind === 'recordings') return rows
+    .filter(r => r.title && ['', 'yes', 'true', '1'].includes((r.published || '').toLowerCase()) && youtubeId(r.youtube_url) && (!r.date || validDate(r.date)))
+    .map(r => ({ title: r.title, speaker: r.speaker || '', details: r.details || '', date: r.date || '', videoId: youtubeId(r.youtube_url) }));
   return rows.filter(r => r.title && ['', 'yes', 'true', '1'].includes((r.published || '').toLowerCase()))
     .filter(r => kind !== 'seminars' || validDate(r.date))
     .filter(r => kind !== 'announcements' || ((!r.date || validDate(r.date)) && (!r.expires || validDate(r.expires))))
@@ -61,10 +74,10 @@ async function readLimited(response) {
 }
 export async function handleFeed(request, env, ctx, cache, fetcher = fetch) {
   const path = new URL(request.url).pathname;
-  const kind = path === '/api/announcements' ? 'announcements' : null;
+  const kind = path === '/api/announcements' ? 'announcements' : path === '/api/recordings' ? 'recordings' : null;
   if (!kind) return json({ error: 'Not found' }, 404);
   if (!['GET', 'HEAD'].includes(request.method)) return new Response(null, { status: 405, headers: { Allow: 'GET, HEAD' } });
-  const source = env.ANNOUNCEMENTS_FEED_URL;
+  const source = kind === 'recordings' ? env.RECORDINGS_FEED_URL : env.ANNOUNCEMENTS_FEED_URL;
   if (!source) return json({ configured: false, items: [] });
   // Include the configured source in the internal key so changing Sheets cannot reuse old content.
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(source));

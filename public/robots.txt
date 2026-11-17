@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://utn-emlab.danajalobeanu.com/sitemap.xml
+Sitemap: https://emlab.danajalobeanu.com/sitemap.xml
